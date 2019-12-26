@@ -88,13 +88,15 @@ class STFT(torch.nn.Module):
         cutoff = int((self.filter_length / 2) + 1)
         real_part = forward_transform[:, :cutoff, :]
         imag_part = forward_transform[:, cutoff:, :]
+        
+        return real_part, imag_part
 
-        magnitude = torch.sqrt(real_part**2 + imag_part**2)
-        phase = torch.atan2(imag_part.data, real_part.data)
+        #magnitude = torch.sqrt(real_part**2 + imag_part**2)
+        #phase = torch.atan2(imag_part.data, real_part.data)
 
-        return magnitude, phase
+        #return magnitude, phase
 
-    def inverse(self, magnitude, phase):
+    def inverse(self, real_part, imag_part):
         """Call the inverse STFT (iSTFT), given magnitude and phase tensors produced 
         by the ```transform``` function.
         
@@ -108,8 +110,9 @@ class STFT(torch.nn.Module):
             inverse_transform {tensor} -- Reconstructed audio given magnitude and phase. Of
                 shape (num_batch, num_samples)
         """
-        recombine_magnitude_phase = torch.cat(
-            [magnitude*torch.cos(phase), magnitude*torch.sin(phase)], dim=1)
+        #recombine_magnitude_phase = torch.cat(
+        #    [magnitude*torch.cos(phase), magnitude*torch.sin(phase)], dim=1)
+        recombine_magnitude_phase = torch.cat([real_part, imag_part], dim=1)
 
         inverse_transform = F.conv_transpose1d(
             recombine_magnitude_phase,
